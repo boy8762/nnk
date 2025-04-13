@@ -283,6 +283,7 @@
 
 
 'use client';
+
 import React from 'react';
 import Loading from '../ui/loading';
 import { useRouter } from 'next/navigation';
@@ -297,57 +298,31 @@ interface EmbedPlayerProps {
   mediaType?: MediaType;
 }
 
-const ANIME_SERVERS = [
-  'https://anime-server-1.example.com',
-  'https://anime-server-2.example.com',
-  'https://anime-server-3.example.com',
-  'https://anime-server-4.example.com',
-  'https://anime-server-5.example.com',
-];
-
 function EmbedPlayer(props: EmbedPlayerProps) {
   const router = useRouter();
 
   const [seasons, setSeasons] = React.useState<ISeason[] | null>(null);
-  const [selectedServer, setSelectedServer] = React.useState(ANIME_SERVERS[0]);
   const [currentEpisode, setCurrentEpisode] = React.useState<IEpisode | null>(null);
   const loadingRef = React.useRef<HTMLDivElement>(null);
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   React.useEffect(() => {
-    if (props.mediaType === MediaType.ANIME) return;
-
-    if (iframeRef.current) {
+    if (props.mediaType === MediaType.ANIME && props.movieId) {
+      void handleAnime(props.movieId);
+    } else if (iframeRef.current) {
       iframeRef.current.src = props.url;
+      iframeRef.current.addEventListener('load', handleIframeLoaded);
     }
-
-    const iframe = iframeRef.current;
-    iframe?.addEventListener('load', handleIframeLoaded);
 
     return () => {
-      iframe?.removeEventListener('load', handleIframeLoaded);
+      iframeRef.current?.removeEventListener('load', handleIframeLoaded);
     };
   }, []);
-
-  React.useEffect(() => {
-    if (!props.movieId || props.mediaType !== MediaType.ANIME) return;
-    void handleAnime(props.movieId);
-  }, [props.movieId, props.mediaType]);
-
-  const handleChangeServer = (server: string) => {
-    setSelectedServer(server);
-
-    if (props.movieId && currentEpisode) {
-      const id = Number(props.movieId.replace('t-', ''));
-      const eps = currentEpisode.episode_number;
-      handleSetIframeUrl(`${server}/embed/tmdb${id}/${eps}/sub`);
-    }
-  };
 
   const handleChangeEpisode = (episode: IEpisode): void => {
     const { show_id: id, episode_number: eps } = episode;
     setCurrentEpisode(episode);
-    handleSetIframeUrl(`${selectedServer}/embed/tmdb${id}/${eps}/sub`);
+    handleSetIframeUrl(`https://multiembed.mov/?video_id=tmdb-tv-${id}&s=${episode.season_number}&e=${eps}`);
   };
 
   const handleAnime = async (movieId: string) => {
@@ -356,16 +331,16 @@ function EmbedPlayer(props: EmbedPlayerProps) {
     const { data } = response;
     if (!data?.seasons?.length) return;
 
-    const seasons = data.seasons.filter((season: ISeason) => season.season_number);
-    const promises = seasons.map(season =>
+    const validSeasons = data.seasons.filter((season: ISeason) => season.season_number);
+    const promises = validSeasons.map(season =>
       MovieService.getSeasons(id, season.season_number),
     );
 
     const seasonWithEpisodes = await Promise.all(promises);
     setSeasons(seasonWithEpisodes.map((res: AxiosResponse<ISeason>) => res.data));
 
-    setCurrentEpisode({ show_id: id, episode_number: 1 } as IEpisode);
-    handleSetIframeUrl(`${selectedServer}/embed/tmdb${id}/1/sub?autoPlay=false`);
+    setCurrentEpisode({ show_id: id, episode_number: 1, season_number: 1 } as IEpisode);
+    handleSetIframeUrl(`https://multiembed.mov/?video_id=tmdb-tv-${id}&s=1&e=1`);
   };
 
   const handleSetIframeUrl = (url: string): void => {
@@ -392,25 +367,6 @@ function EmbedPlayer(props: EmbedPlayerProps) {
         backgroundColor: '#000',
       }}
     >
-      {/* Server selector (only for anime) */}
-      {props.mediaType === MediaType.ANIME && (
-        <div className="absolute z-10 top-4 left-4 bg-black bg-opacity-70 p-2 rounded-md text-white">
-          <label htmlFor="server-select" className="mr-2 text-sm">Server:</label>
-          <select
-            id="server-select"
-            value={selectedServer}
-            onChange={(e) => handleChangeServer(e.target.value)}
-            className="bg-gray-800 text-white text-sm p-1 rounded-md"
-          >
-            {ANIME_SERVERS.map((server, i) => (
-              <option key={server} value={server}>
-                Anime Server {i + 1}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {/* Season/Episode selector */}
       {seasons && (
         <Season seasons={seasons ?? []} onChangeEpisode={handleChangeEpisode} />
