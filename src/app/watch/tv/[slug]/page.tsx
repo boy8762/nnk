@@ -167,6 +167,7 @@ const WatchPage: React.FC = () => {
 
   // List of embed API providers with custom names
   const embedSources = [
+    { name: "Main1 { Multi }", url: `https://Letsembed.cc/embed/tv/?id=${id}/${selectedSeason}/${episode}` },
     { name: "Netprime Server 1 { Multi }", url: `https://vidzee.wtf/tv/multi.php?id=${id}/${selectedSeason}/${episode}` },
     { name: "Netprime Server 1 {Anime} { Multi }", url: `https://api.flixindia.site/anime/${id}/${selectedSeason}/${episode}` },
     { name: "Netprime Server 2 {Og}", url: `https://vidzee.wtf/tv/?id=${id}/${selectedSeason}/${episode}` },
