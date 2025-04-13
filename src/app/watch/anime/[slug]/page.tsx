@@ -66,7 +66,7 @@ export default function Page({ params }: { params: { slug: string } }) {
     <EmbedPlayer
       movieId={movieId}
       mediaType={type}
-      url={`https://player.letsembed.cc/masterstream/tv/?id=${id}&${selectedSeason}&${episode`}
+      url={`https://player.letsembed.cc/masterstream/tv/?id=${id}&${selectedSeason}&${episode}`}
     />
   );
 }
