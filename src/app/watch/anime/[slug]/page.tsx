@@ -44,29 +44,33 @@ import { MediaType } from '@/types';
 
 export const revalidate = 3600;
 
-export default function Page({ params }: { params: { slug: string } }) {
-  const id = params.slug.split('-').pop();
-  const movieId: string | undefined = params.slug.split('/').pop();
-  const type = movieId?.includes('t') ? MediaType.ANIME : undefined;
-
-   interface Episode {
+interface Episode {
   id: number;
   name: string;
   overview: string;
   still_path: string;
+}
 
-
-      interface Season {
+interface Season {
   season_number: number;
   name: string;
   episodes: Episode[];
 }
 
+export default function Page({ params }: { params: { slug: string } }) {
+  const id = params.slug.split('-').pop();
+  const movieId: string | undefined = params.slug.split('/').pop();
+  const type = movieId?.includes('t') ? MediaType.ANIME : undefined;
+
+  const selectedSeason = 1; // You can dynamically set this later
+  const episode = 1;        // Same here
+
   return (
     <EmbedPlayer
       movieId={movieId}
       mediaType={type}
-      url={`https://player.letsembed.cc/masterstream/tv/?id=${id}&${selectedSeason}&${episode}`}
+      url={`https://player.letsembed.cc/masterstream/tv/?id=${id}&season=${selectedSeason}&episode=${episode}`}
     />
   );
 }
+
