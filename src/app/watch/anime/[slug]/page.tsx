@@ -53,7 +53,7 @@ export default function Page({ params }: { params: { slug: string } }) {
     <EmbedPlayer
       movieId={movieId}
       mediaType={type}
-      url={`https://vidsrc.cc/v2/embed/anime/tmdb${id}/1/sub?autoPlay=true`}
+      url={`https://player.letsembed.cc/masterstream/tv/?id=${id}&${selectedSeason}&${episode`}
     />
   );
 }
