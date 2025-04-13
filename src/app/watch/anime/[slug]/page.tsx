@@ -49,6 +49,19 @@ export default function Page({ params }: { params: { slug: string } }) {
   const movieId: string | undefined = params.slug.split('/').pop();
   const type = movieId?.includes('t') ? MediaType.ANIME : undefined;
 
+   interface Episode {
+  id: number;
+  name: string;
+  overview: string;
+  still_path: string;
+
+
+      interface Season {
+  season_number: number;
+  name: string;
+  episodes: Episode[];
+}
+
   return (
     <EmbedPlayer
       movieId={movieId}
